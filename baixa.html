@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>App Baixa</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <style type="text/css">
+    
+    .list-group-item{
+      min-height: 110px;
+    }
+    .nome, .cidade, .min{
+      font-weight: bold;
+    }
+    .nome{
+      font-size: 18px;
+    }
+
+    .min{
+      color: #c0392b;
+      float: left;
+      margin-bottom: 10px;
+    }
+    #motoboy{
+      text-align: center;
+    }
+    label{
+      font-size: 16px;
+    }
+    table thead tr td:first-child{
+        width: 140px;
+    } 
+    @media screen and (min-width: 768px) {
+      .status{
+        margin-top: -15px;
+      }  
+    }
+    </style>
+    <script src="js/fastclick.js"></script>
+  </head>
+
+  <body>
+  <div class="menu">
+    <div class="container">
+      <div class="row">   
+        <div class="col-md-4">
+       <a href="home.html" class="btn btn-danger add pull-left back"><</a>
+    </div> 
+    <div class="col-md-4">
+      <h3 class="title-mesa">Pedidos a Entregar</h3>
+    </div>
+    </div>
+  </div>
+  </div>
+  <br />
+  <div class="container">    
+  <div class="row">
+      <div class="col-md-12">
+      <label>Escolha um motoboy</label>
+        <select id="motoboy" class="form-control input-lg"></select>
+      </div>
+  </div>
+  <br />
+  <div class="row">
+  <div class="col-md-12">
+        <table class="table table-bordered">
+      <thead>
+         <tr>
+           <td>Nome</td>
+           <td id="nome"></td>
+         </tr>
+         <tr>
+           <td>Cidade</td>
+           <td id="cidade"></td>
+         </tr>
+         <tr>
+           <td>Bairro</td>
+           <td id="bairro"></td>
+         </tr>
+         <tr>
+           <td>F. de Pagamento</td>
+           <td id="f_pag"></td>
+         </tr>
+         <tr>
+           <td>Troco</td>
+           <td id="troco"></td>
+         </tr>
+      </thead>
+    </table>
+  </div>
+  </div>
+    <div class="row">
+      <div class="col-md-12">
+        <button class="btn btn-success btn-block btn-lg" id="btn" disabled="">Dar baixa</button>
+      </div>
+  </div>
+  </div>
+
+    <script src="js/jquery.js"></script>
+    <script src="js/vibe-lib.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/account.js"></script>
+
+    <script type="text/javascript">
+    $(function(){
+      var codigo = location.search.split('=')[1];
+      var motoboy;
+      var url = urlServer+"motoboy.php";
+      AjaxGet(url, null, Result);
+
+      function Result(err, result){
+        result = formatArray(result);
+        
+        var itens = "";
+        itens += "<option value='disabled'>SELECIONE</option>"
+        result.forEach(function(item){
+            
+            itens += "<option value='"+item.codigo+"''>"+item.nome+"</option>"
+        });
+      $('#motoboy').append(itens);        
+        motoboy = $('#motoboy').val();
+      }
+      
+      var url = urlServer+"perfil_pedido.php";
+      
+      AjaxGet(url, {codigo: codigo}, Result2);
+      
+      function Result2(err, result){
+          result = formatArray(result);
+          result = result[0];
+          
+          $('#nome').text(result.nome);      
+          $('#cidade').text(result.cidade);      
+          $('#bairro').text(result.bairro);  
+          $('#troco').text(result.troco);  
+          $('#f_pag').text(forma_pag(result.forma));
+      }
+      
+      var nome = "Nicholas Eduardo";     
+        
+
+      $('#btn').click(function(e){
+        e.preventDefault();
+
+        var valor = confirm('Deseja dar Baixa?');
+        if(valor){
+          var url = urlServer+"baixar.php";
+          var baixa = {codigo: codigo, mot: motoboy};
+          
+          AjaxPost(url, baixa, Result3);
+        }
+      });
+
+      function Result3(err, result){
+          location.replace("home.html");
+      }
+
+      $('#motoboy').change(function(e){
+        e.preventDefault();
+        motoboy = $('#motoboy').val();
+        if(motoboy == "disabled"){
+         $('#btn').attr("disabled", "disabled");   
+        }else{
+          $('#btn').removeAttr('disabled');
+        }        
+      });
+
+      function forma_pag(item){
+        switch(item){
+          case "av": return "EM DINHEIRO";
+          break;
+        }
+      }
+    });
+    </script>
+  </body>
+</html>

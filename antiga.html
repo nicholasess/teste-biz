@@ -33,7 +33,7 @@
     }
     
     .list-group-item{
-      min-height: 110px;
+      height: 145px;
     }
     .nome, .cidade, .min{
       font-weight: bold;
@@ -46,6 +46,7 @@
       color: #c0392b;
       float: left;
       margin-bottom: 10px;
+      width: 100%;
     }
     
     
@@ -56,12 +57,10 @@
     .list-group{
       width: 100%;
     }
-    .back{
-      margin-left: -20px;
+    .list-group-item {
+      cursor: pointer;
     }
-    .title-mesa{
-      margin-left: -20px;
-    }
+    
     @media screen and (min-width: 768px) {
       .status{
         margin-top: -5px;
@@ -70,18 +69,16 @@
     </style>
     <script src="js/fastclick.js"></script>
   </head>
+
   <body>
   <div class="menu">
     <div class="container">
-      <div class="row"> 
-      <div class="col-md-4">
-       <a href="add_server.html" class="btn btn-danger add pull-left back">?</a>
-      </div>    
+      <div class="row">
+            <div class="col-md-4">
+       <a href="home.html" class="btn btn-danger add pull-left back"><</a>
+    </div>    
     <div class="col-md-4">
-      <h3 class="title-mesa">Pedidos a Entregar</h3>
-    </div>
-    <div class="col-md-4">
-      <a href="antiga.html" class="btn btn-success add pull-right">+</a>
+      <h3 class="title-mesa">Pedidos Entregues</h3>
     </div>
     </div>
   </div>
@@ -100,40 +97,53 @@
 
     <script type="text/javascript">
     $(function(){
-      var url = urlServer+"pedidos_entregar.php";
-      function start(){
+      var url = urlServer+"pedidos_entregue.php";
+      
         AjaxGet(url, null, Result);
-      }
       function Result(err, result){
-        array = formatArray(result);        
-        console.log(array);
+        array = formatArray(result);         
         if(array.length == 0){
             var itens = msgAlert("Não há produtos inseridos");
-
-          $('.list-group').append(itens);
+            $('.list-group').append(itens).css("text-align", "center");
         }else{
-             $('.list-group').empty(); 
+            $('.list-group').empty();  
+            var itens = "";
             array.forEach(function(item){
-              
-              var itens = "<a href='baixa.html?cod="+item.codigoCompra+"'' class='list-group-item'>";
+                  var itens = "<div id='"+item.codigoCompra+"' class='list-group-item'>";
                   itens += "<div class='col-md-6'>";
                   itens += "<p class='nome'>"+item.nome+" - "+item.tel+" </p>";
                   itens += "<p class='cidade'>"+item.cidade+"</p>";
                   itens += "</div>";
                   itens += "<div class='col-md-6'>";
-                  itens += "<p class='min'>"+item.minutos+" min</p>";
-                  itens += "<div class='status "+Status(item.minutos)+"'></div>";
+                  if(item.nMotoboy == null){
+                      itens += "<p class='min'>Não contém</p>";
+                  }else{
+                    itens += "<p class='min'>"+item.nMotoboy+"</p>";
+                  }
+                  itens += "<p class='min'>Data Entrega "+formatData(item.dataEnt)+"</p>";
                   itens += "</div>";
-                  itens += "</a>";
-              
-              $('.list-group').append(itens);
+                  itens += "</div>";
+          
+                  $('.list-group').append(itens);
             });
+            
         }
-       setTimeout(start, 2000);
+       
       }
-      start();
-      function Status(min){
-        
+
+      $('.list-group').on('click', '.list-group-item', function(e){
+        e.preventDefault();
+        var cod = $(this).attr("id");
+        var valor = confirm("Deseja retorna o Pedido?");
+        if(valor){
+          var url2 = urlServer+"voltar.php";
+          AjaxPost(url2, {codigo: cod}, function(){
+            AjaxGet(url, null, Result);
+          });
+        }
+      });
+      
+      function Status(min){        
         if(min <= 30){
           return "verde";
         }
@@ -147,7 +157,20 @@
         }
       }
 
+      function formatData(data){
+        if(data != null){
+          data = data.split(" ")[0];
+          data = data.split("-");
+          dia = data[2];
+          mes = data[1];
+          ano = data[0];
+          data = dia+'/'+mes+'/'+ano;
+        }else{
+          data = "Não contém";
+        }
 
+        return data;
+      }
 
     });
     </script>
